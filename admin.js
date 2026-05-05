@@ -120,6 +120,12 @@ const Admin = (() => {
         };
 
         Utils.store('clinic_erp_settings', settings);
+        
+        // Re-initialize Supabase connection
+        if (typeof API !== 'undefined' && API.initSupabase) {
+            API.initSupabase();
+        }
+
         Utils.showToast('Settings saved successfully!', 'success');
 
         // Update sidebar title

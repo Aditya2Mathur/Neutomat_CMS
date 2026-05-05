@@ -482,6 +482,49 @@
                     </section>
 
 
+                    <!-- ===================== INVENTORY (Admin) ===================== -->
+                    <section id="inventory" class="page-section hidden">
+                        <div class="toolbar">
+                            <div class="toolbar-left" style="flex: 1;">
+                                <div class="search-input-wrap" style="max-width: 400px; width: 100%;">
+                                    <i class="ph ph-magnifying-glass"></i>
+                                    <input type="text" id="inventory-search" placeholder="Search medicines by name or category..." onkeyup="Pharmacy.searchInventory(this.value)">
+                                </div>
+                            </div>
+                            <div class="toolbar-right">
+                                <button class="btn btn-sm btn-primary" onclick="Pharmacy.showAddMedicineModal()">
+                                    <i class="ph ph-plus-circle"></i> Add Medicine
+                                </button>
+                                <button class="btn btn-sm btn-outline" onclick="Pharmacy.loadInventory()">
+                                    <i class="ph ph-arrows-clockwise"></i> Refresh
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="table-container">
+                                <table class="data-table" id="inventory-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Medicine Name</th>
+                                            <th>Category</th>
+                                            <th>Stock</th>
+                                            <th>Unit</th>
+                                            <th>Min Stock</th>
+                                            <th>Price</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td colspan="8" class="table-empty"><i class="ph ph-package"></i>Loading inventory...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </section>
+
                     <!-- ===================== USERS (Admin) ===================== -->
                     <section id="users" class="page-section hidden">
                         <div class="toolbar">

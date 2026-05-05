@@ -602,7 +602,7 @@ const API = (() => {
     return {
         auth, patients, appointments, prescriptions,
         pharmacy, inventory, dashboard, audit,
-        refreshAll, processOfflineQueue,
+        refreshAll, processOfflineQueue, initSupabase,
         getCache, setCache
     };
 })();

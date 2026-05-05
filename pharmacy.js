@@ -438,6 +438,7 @@ const Pharmacy = (() => {
         searchInventory,
         editStock,
         saveStock,
+        showAddMedicineModal,
         addMedicine,
         viewPrescription,
         dispenseRx,

@@ -76,6 +76,7 @@ const App = (() => {
             { id: 'appointments', icon: 'ph-list-checks', label: 'All Appointments' },
             { id: 'doctor-queue', icon: 'ph-queue', label: 'Doctor Queue' },
             { id: 'pharmacy-queue', icon: 'ph-prescription', label: 'Pharmacy Queue' },
+            { id: 'inventory', icon: 'ph-package', label: 'Inventory' },
             { id: 'users', icon: 'ph-users-three', label: 'Users' },
             { id: 'settings', icon: 'ph-gear', label: 'Settings' },
             { id: 'patient-search', icon: 'ph-magnifying-glass', label: 'Search' },
@@ -278,6 +279,7 @@ const App = (() => {
             'doctor-queue': { title: 'Patient Queue', desc: 'Your assigned patients for today' },
             'prescription-editor': { title: 'Prescription', desc: 'Write and manage prescriptions' },
             'pharmacy-queue': { title: 'Pharmacy Queue', desc: 'Prescriptions ready for dispensing' },
+            'inventory': { title: 'Inventory Management', desc: 'Manage medicines and stock' },
             'users': { title: 'User Management', desc: 'Manage system users and roles' },
             'settings': { title: 'Settings', desc: 'System configuration' },
             'patient-search': { title: 'Search Patients', desc: 'Find patient records' },
@@ -310,6 +312,9 @@ const App = (() => {
                 break;
             case 'pharmacy-queue':
                 if (typeof Pharmacy !== 'undefined') Pharmacy.loadQueue();
+                break;
+            case 'inventory':
+                if (typeof Pharmacy !== 'undefined') Pharmacy.loadInventory();
                 break;
             case 'patient-search':
                 // Search page ready
