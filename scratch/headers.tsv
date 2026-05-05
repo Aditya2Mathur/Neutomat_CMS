@@ -1,0 +1,1 @@
+AppointmentID	PatientID	DoctorID	DoctorName	Specialty	Name	Age	Gender	Phone	Address	Weight	Symptoms	Fee	Status	BookedBy	AppointmentDate	AppointmentTime	VisitCount	ValidTill	CreatedAt	Timestamp

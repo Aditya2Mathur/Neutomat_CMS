@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clinic ERP — Management System</title>
+    <meta name="description"
+        content="Complete Clinic Management System with Reception, Doctor, Pharmacy, and Admin modules.">
+
+    <!-- Preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <script defer src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Chart.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+    <!-- ========== LOGIN OVERLAY ========== -->
+    <div id="login-overlay" class="login-overlay">
+        <div class="login-bg-pattern"></div>
+        <div class="login-box">
+            <div class="login-brand">
+                <div class="logo-icon"><i class="ph ph-first-aid"></i></div>
+                <h2>Clinic ERP</h2>
+                <p>Sign in to access the management system</p>
+            </div>
+            <div id="login-error" class="login-error">Invalid credentials</div>
+            <form id="login-form" class="login-form">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="login-username" class="form-control" placeholder="Enter username"
+                        autocomplete="off" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="login-password" class="form-control" placeholder="Enter password"
+                        required>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="ph ph-sign-in"></i> Sign In
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ========== MAIN APPLICATION ========== -->
+    <div class="app-container" id="main-app" style="display: none;">
+
+        <!-- ===== SIDEBAR ===== -->
+        <aside class="sidebar no-print">
+            <div class="sidebar-header">
+                <div class="sidebar-logo"><i class="ph ph-first-aid"></i></div>
+                <div>
+                    <h2>Clinic ERP</h2>
+                    <span id="topbar-role-label">Dashboard</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav" id="sidebar-nav">
+                <!-- Populated dynamically by app.js -->
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="sidebar-user">
+                    <div class="avatar" id="user-avatar">A</div>
+                    <div class="sidebar-user-info">
+                        <div class="name" id="user-display-name">User</div>
+                        <div class="role-badge" id="user-display-role">Role</div>
+                    </div>
+                    <button class="btn btn-ghost btn-icon" id="btn-logout" title="Logout">
+                        <i class="ph ph-sign-out"></i>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ===== MAIN CONTENT ===== -->
+        <main class="main-content">
+
+            <!-- Topbar -->
+            <header class="topbar no-print">
+                <div class="topbar-left">
+                    <button class="btn btn-ghost btn-icon hidden" id="btn-menu" onclick="App.toggleSidebar()">
+                        <i class="ph ph-list"></i>
+                    </button>
+                    <div class="topbar-title">
+                        <h1 id="topbar-page-title">Dashboard</h1>
+                        <p id="topbar-page-desc">Overview of today's activity</p>
+                    </div>
+                </div>
+                <div class="topbar-right">
+                    <div class="topbar-clock" id="topbar-clock"></div>
+                    <button class="btn btn-ghost btn-icon" onclick="location.reload()" title="Refresh">
+                        <i class="ph ph-arrows-clockwise"></i>
+                    </button>
+                </div>
+            </header>
+
+            <div class="content-area">
+                <div class="content-inner">
+
+                    <!-- ===================== DASHBOARD ===================== -->
+                    <section id="dashboard" class="page-section">
+                        <div class="stats-grid">
+                            <div class="stat-card"
+                                onclick="App.navigateTo('appointments'); setTimeout(()=>Reception.filterAppointments('daily', document.querySelector('.filter-tab[data-filter=daily]')), 50)"
+                                style="cursor: pointer;" title="View Today's Patients">
+                                <div class="stat-icon blue"><i class="ph ph-users"></i></div>
+                                <div class="stat-info">
+                                    <h4>Today's Patients</h4>
+                                    <div class="stat-value" id="stat-today">0</div>
+                                </div>
+                            </div>
+                            <div class="stat-card"
+                                onclick="App.navigateTo('appointments'); setTimeout(()=>Reception.filterAppointments('weekly', document.querySelector('.filter-tab[data-filter=weekly]')), 50)"
+                                style="cursor: pointer;" title="View This Week's Patients">
+                                <div class="stat-icon green"><i class="ph ph-calendar-check"></i></div>
+                                <div class="stat-info">
+                                    <h4>This Week</h4>
+                                    <div class="stat-value" id="stat-weekly">0</div>
+                                </div>
+                            </div>
+                            <div class="stat-card"
+                                onclick="App.navigateTo('appointments'); setTimeout(()=>Reception.filterAppointments('monthly', document.querySelector('.filter-tab[data-filter=monthly]')), 50)"
+                                style="cursor: pointer;" title="View This Month's Patients">
+                                <div class="stat-icon purple"><i class="ph ph-chart-line-up"></i></div>
+                                <div class="stat-info">
+                                    <h4>This Month</h4>
+                                    <div class="stat-value" id="stat-monthly">0</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon orange"><i class="ph ph-coins"></i></div>
+                                <div class="stat-info">
+                                    <h4>Today's Revenue</h4>
+                                    <div class="stat-value" id="stat-revenue">₹0</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3><i class="ph ph-chart-bar"></i> Patient Visits (7 Days)</h3>
+                                </div>
+                                <div class="card-body" style="height: 280px;">
+                                    <canvas id="dashboard-chart"></canvas>
+                                </div>
+                            </div>
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3><i class="ph ph-clock-countdown"></i> Recent Activity</h3>
+                                </div>
+                                <div class="card-body" id="recent-activity"
+                                    style="max-height: 280px; overflow-y: auto;">
+                                    <div class="empty-state">
+                                        <i class="ph ph-clipboard-text"></i>
+                                        <p>No recent activity</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- ===================== BOOKING (Reception) ===================== -->
+                    <section id="booking" class="page-section hidden">
+                        <div class="form-card">
+                            <form id="booking-form">
+                                <div id="booking-status" class="hidden" style="margin-bottom: 1rem;"></div>
+
+                                <div class="form-row form-row-3">
+                                    <div class="form-group">
+                                        <label>Phone Number <span class="required">*</span></label>
+                                        <input type="tel" id="b-phone" class="form-control"
+                                            placeholder="10-digit number" pattern="[0-9]{10}" required>
+                                        <div class="form-hint">Auto-fills returning patient details</div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Patient Name <span class="required">*</span></label>
+                                        <input type="text" id="b-name" class="form-control" placeholder="Full name"
+                                            required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Patient ID</label>
+                                        <input type="text" id="b-pid" class="form-control" readonly
+                                            placeholder="Auto-generated">
+                                    </div>
+                                </div>
+
+                                <div class="form-row form-row-4">
+                                    <div class="form-group">
+                                        <label>Age <span class="required">*</span></label>
+                                        <input type="number" id="b-age" class="form-control" placeholder="Age" min="0"
+                                            max="150" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Gender <span class="required">*</span></label>
+                                        <select id="b-gender" class="form-control" required>
+                                            <option value="">Select</option>
+                                            <option value="Male">Male</option>
+                                            <option value="Female">Female</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Weight (kg)</label>
+                                        <input type="number" id="b-weight" class="form-control" placeholder="e.g. 65">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Fee (₹) <span class="required">*</span></label>
+                                        <input type="number" id="b-fee" class="form-control" value="300" required>
+                                    </div>
+                                </div>
+
+                                <div class="form-row form-row-2">
+                                    <div class="form-group">
+                                        <label>Address <span class="required">*</span></label>
+                                        <input type="text" id="b-address" class="form-control"
+                                            placeholder="Patient address" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Specialty <span class="required">*</span></label>
+                                        <select id="b-specialty" class="form-control" required>
+                                            <option value="">Select Specialty</option>
+                                            <option value="neuro">Neuro Surgeon</option>
+                                            <option value="gynecologist">Gynecology</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-row form-row-2">
+                                    <div class="form-group">
+                                        <label>Appointment Date <span class="required">*</span></label>
+                                        <input type="date" id="b-date" class="form-control" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Appointment Time</label>
+                                        <input type="time" id="b-time" class="form-control">
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Symptoms / Chief Complaint</label>
+                                    <textarea id="b-symptoms" class="form-control" rows="3"
+                                        placeholder="Describe symptoms or reason for visit..."></textarea>
+                                </div>
+
+                                <div class="form-actions">
+                                    <button type="button" class="btn btn-outline"
+                                        onclick="Utils.clearForm(document.getElementById('booking-form')); document.getElementById('b-date').value = Utils.todayISO();">
+                                        <i class="ph ph-x"></i> Clear
+                                    </button>
+                                    <button type="submit" class="btn btn-success" id="btn-book">
+                                        <i class="ph ph-check-circle"></i> Book Appointment
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </section>
+
+                    <!-- ===================== APPOINTMENTS LIST ===================== -->
+                    <section id="appointments" class="page-section hidden">
+                        <div class="toolbar">
+                            <div class="toolbar-left">
+                                <div class="filter-tabs">
+                                    <button class="filter-tab active" data-filter="daily"
+                                        onclick="Reception.filterAppointments('daily', this)">Today</button>
+                                    <button class="filter-tab" data-filter="weekly"
+                                        onclick="Reception.filterAppointments('weekly', this)">This Week</button>
+                                    <button class="filter-tab" data-filter="monthly"
+                                        onclick="Reception.filterAppointments('monthly', this)">This Month</button>
+                                    <button class="filter-tab" data-filter="all"
+                                        onclick="Reception.filterAppointments('all', this)">All</button>
+                                </div>
+                            </div>
+                            <div class="toolbar-right">
+                                <button class="btn btn-sm btn-primary" onclick="App.navigateTo('booking')">
+                                    <i class="ph ph-plus"></i> New Booking
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="table-container">
+                                <table class="data-table" id="appointments-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Appt ID</th>
+                                            <th>Patient</th>
+                                            <th>Phone</th>
+                                            <th>Age/Gender</th>
+                                            <th>Specialty</th>
+                                            <th>Status</th>
+                                            <th>Date</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td colspan="8" class="table-empty"><i
+                                                    class="ph ph-calendar-blank"></i>Loading appointments...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- ===================== DOCTOR QUEUE ===================== -->
+                    <section id="doctor-queue" class="page-section hidden">
+                        <div class="toolbar">
+                            <div class="toolbar-left">
+                                <div class="filter-tabs">
+                                    <button class="filter-tab active" data-filter="assigned"
+                                        onclick="Doctor.filterQueue('assigned', this)">Waiting</button>
+                                    <button class="filter-tab" data-filter="in_consultation"
+                                        onclick="Doctor.filterQueue('in_consultation', this)">In Progress</button>
+                                    <button class="filter-tab" data-filter="completed"
+                                        onclick="Doctor.filterQueue('completed', this)">Completed</button>
+                                </div>
+                            </div>
+                            <div class="toolbar-right">
+                                <button class="btn btn-sm btn-outline" onclick="Doctor.loadQueue()">
+                                    <i class="ph ph-arrows-clockwise"></i> Refresh
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-body" id="doctor-queue-list">
+                                <div class="empty-state">
+                                    <i class="ph ph-queue"></i>
+                                    <h3>No patients in queue</h3>
+                                    <p>Waiting patients will appear here.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- ===================== PRESCRIPTION EDITOR ===================== -->
+                    <section id="prescription-editor" class="page-section hidden">
+                        <div class="card mb-2">
+                            <div class="card-header">
+                                <h3><i class="ph ph-user"></i> Patient Information</h3>
+                                <span class="badge badge-blue" id="rx-appt-id">-</span>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-row form-row-4">
+                                    <div class="form-group">
+                                        <label>Name</label>
+                                        <input type="text" id="rx-patient-name" class="form-control" readonly>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Age / Gender</label>
+                                        <input type="text" id="rx-patient-age-gender" class="form-control" readonly>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Phone</label>
+                                        <input type="text" id="rx-patient-phone" class="form-control" readonly>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Weight</label>
+                                        <input type="text" id="rx-patient-weight" class="form-control" readonly>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Symptoms</label>
+                                    <div id="rx-patient-symptoms"
+                                        style="padding: 0.5rem; background: var(--bg-alt); border-radius: var(--radius-md); font-size: 0.9rem; color: var(--text-secondary); min-height: 40px;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card mb-2">
+                            <div class="card-header">
+                                <h3><i class="ph ph-stethoscope"></i> Diagnosis & Notes</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-group mb-2">
+                                    <label>Diagnosis <span class="required">*</span></label>
+                                    <input type="text" id="rx-diagnosis" class="form-control"
+                                        placeholder="Enter diagnosis...">
+                                </div>
+                                <div class="form-row form-row-2">
+                                    <div class="form-group">
+                                        <label>Clinical Notes</label>
+                                        <textarea id="rx-notes" class="form-control" rows="3"
+                                            placeholder="Additional notes..."></textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Advice / Follow-up</label>
+                                        <textarea id="rx-advice" class="form-control" rows="3"
+                                            placeholder="Advice for patient, follow-up instructions..."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card mb-2">
+                            <div class="card-header">
+                                <h3><i class="ph ph-pill"></i> Medicines</h3>
+                                <button class="btn btn-sm btn-outline" onclick="Doctor.addMedicineRow()">
+                                    <i class="ph ph-plus"></i> Add Medicine
+                                </button>
+                            </div>
+                            <div class="card-body" style="padding: 0;">
+                                <div class="medicine-table-wrap">
+                                    <table class="medicine-table" id="medicine-table">
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 5%;">#</th>
+                                                <th style="width: 28%;">Medicine Name</th>
+                                                <th style="width: 15%;">Dosage</th>
+                                                <th style="width: 15%;">Frequency</th>
+                                                <th style="width: 12%;">Duration</th>
+                                                <th style="width: 20%;">Instructions</th>
+                                                <th style="width: 5%;"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="medicine-tbody">
+                                            <!-- Rows added dynamically -->
+                                        </tbody>
+                                    </table>
+                                    <button class="add-medicine-btn" onclick="Doctor.addMedicineRow()">
+                                        <i class="ph ph-plus-circle"></i> Add Another Medicine
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions" style="border-top: none; padding-top: 0;">
+                            <button class="btn btn-outline" onclick="App.navigateTo('doctor-queue')">
+                                <i class="ph ph-arrow-left"></i> Back to Queue
+                            </button>
+                            <button class="btn btn-primary" onclick="Doctor.savePrescription('draft')">
+                                <i class="ph ph-floppy-disk"></i> Save Draft
+                            </button>
+                            <button class="btn btn-success" onclick="Doctor.savePrescription('completed')">
+                                <i class="ph ph-check-circle"></i> Complete & Send to Pharmacy
+                            </button>
+                        </div>
+                    </section>
+
+                    <!-- ===================== PHARMACY QUEUE ===================== -->
+                    <section id="pharmacy-queue" class="page-section hidden">
+                        <div class="toolbar">
+                            <div class="toolbar-left">
+                                <div class="filter-tabs">
+                                    <button class="filter-tab active" data-filter="pending"
+                                        onclick="Pharmacy.filterQueue('pending', this)">Pending</button>
+                                    <button class="filter-tab" data-filter="dispensed"
+                                        onclick="Pharmacy.filterQueue('dispensed', this)">Dispensed</button>
+                                </div>
+                            </div>
+                            <div class="toolbar-right">
+                                <button class="btn btn-sm btn-outline" onclick="Pharmacy.loadQueue()">
+                                    <i class="ph ph-arrows-clockwise"></i> Refresh
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-body" id="pharmacy-queue-list">
+                                <div class="empty-state">
+                                    <i class="ph ph-prescription"></i>
+                                    <h3>No prescriptions pending</h3>
+                                    <p>Completed prescriptions from doctors will appear here.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+
+                    <!-- ===================== USERS (Admin) ===================== -->
+                    <section id="users" class="page-section hidden">
+                        <div class="toolbar">
+                            <div class="toolbar-left">
+                                <h3 style="font-weight: 600;">System Users</h3>
+                            </div>
+                            <div class="toolbar-right">
+                                <button class="btn btn-sm btn-primary" onclick="Admin.showAddUserModal()">
+                                    <i class="ph ph-user-plus"></i> Add User
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="table-container">
+                                <table class="data-table" id="users-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Username</th>
+                                            <th>Role</th>
+                                            <th>Specialty</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="users-tbody">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- ===================== SETTINGS (Admin) ===================== -->
+                    <section id="settings" class="page-section hidden">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3><i class="ph ph-gear"></i> System Settings</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-group mb-2">
+                                    <label>Clinic Name</label>
+                                    <input type="text" class="form-control" value="Clinic ERP" id="setting-clinic-name">
+                                </div>
+                                <div class="form-group mb-2">
+                                    <label>Clinic Address</label>
+                                    <input type="text" class="form-control" placeholder="Enter clinic address"
+                                        id="setting-clinic-address">
+                                </div>
+                                <div class="form-group mb-2">
+                                    <label>Clinic Phone</label>
+                                    <input type="text" class="form-control" placeholder="Enter clinic phone"
+                                        id="setting-clinic-phone">
+                                </div>
+                                <div class="form-group mb-2">
+                                    <label>Supabase Project URL</label>
+                                    <input type="text" class="form-control" placeholder="https://xyz.supabase.co"
+                                        id="setting-supabase-url">
+                                </div>
+                                <div class="form-group mb-2">
+                                    <label>Supabase Anon Key</label>
+                                    <input type="text" class="form-control" placeholder="eyJhbGciOiJIUzI1NiIsIn..."
+                                        id="setting-supabase-key">
+                                    <div class="form-hint">Your Supabase project's public anon key</div>
+                                </div>
+                                <div class="form-group mb-2">
+                                    <label>Default Consultation Fee (₹)</label>
+                                    <input type="number" class="form-control" value="300" id="setting-default-fee">
+                                </div>
+                                <div class="form-actions">
+                                    <button class="btn btn-primary" onclick="Admin.saveSettings()">
+                                        <i class="ph ph-floppy-disk"></i> Save Settings
+                                    </button>
+                                    <button class="btn btn-outline" onclick="Admin.seedDemoData()" id="btn-seed-data">
+                                        <i class="ph ph-database"></i> Seed Demo Data
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- ===================== PATIENT SEARCH ===================== -->
+                    <section id="patient-search" class="page-section hidden">
+                        <div class="toolbar">
+                            <div class="toolbar-left" style="flex: 1;">
+                                <div class="search-input-wrap" style="max-width: 500px; width: 100%;">
+                                    <i class="ph ph-magnifying-glass"></i>
+                                    <input type="text" id="global-search-input"
+                                        placeholder="Search by name, phone, or appointment ID...">
+                                </div>
+                                <button class="btn btn-sm btn-primary" id="btn-global-search">Search</button>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="table-container">
+                                <table class="data-table" id="search-results-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Appt ID</th>
+                                            <th>PID</th>
+                                            <th>Name</th>
+                                            <th>Phone</th>
+                                            <th>Age/Gender</th>
+                                            <th>Status</th>
+                                            <th>Date</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td colspan="8" class="table-empty"><i
+                                                    class="ph ph-magnifying-glass"></i>Enter a search query to find
+                                                records</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- ===================== PRINT VIEW ===================== -->
+                    <section id="print-view" class="page-section hidden">
+                        <div class="print-actions no-print" id="print-action-bar">
+                            <button class="btn btn-outline" onclick="App.navigateTo('dashboard')">
+                                <i class="ph ph-arrow-left"></i> Back
+                            </button>
+                            <button class="btn btn-primary" onclick="PrintModule.print()">
+                                <i class="ph ph-printer"></i> Print Prescription
+                            </button>
+                            <button class="btn btn-whatsapp" onclick="PrintModule.sendWhatsApp()">
+                                <i class="ph ph-whatsapp-logo"></i> WhatsApp
+                            </button>
+                        </div>
+
+                        <div class="print-template" id="print-template">
+                            <div class="print-header">
+                                <div class="print-clinic-info">
+                                    <h2 id="print-clinic-name">Clinic ERP</h2>
+                                    <p id="print-clinic-address">Clinic Address</p>
+                                    <p id="print-clinic-phone">Phone: -</p>
+                                </div>
+                                <div style="text-align: right;">
+                                    <div style="font-size: 0.8rem; color: var(--text-muted);">Date</div>
+                                    <div style="font-size: 1rem; font-weight: 600;" id="print-date"></div>
+                                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;"
+                                        id="print-rx-id"></div>
+                                </div>
+                            </div>
+
+                            <div class="print-patient-info">
+                                <div class="field"><label>Patient Name</label>
+                                    <div id="print-p-name">-</div>
+                                </div>
+                                <div class="field"><label>Age / Gender</label>
+                                    <div id="print-p-age-gender">-</div>
+                                </div>
+                                <div class="field"><label>Phone</label>
+                                    <div id="print-p-phone">-</div>
+                                </div>
+                                <div class="field"><label>Weight</label>
+                                    <div id="print-p-weight">-</div>
+                                </div>
+                            </div>
+
+                            <div class="print-rx-body">
+                                <div id="print-symptoms-section">
+                                    <h3>Symptoms</h3>
+                                    <p id="print-p-symptoms">-</p>
+                                </div>
+
+                                <div id="print-diagnosis-section" style="margin-top: 1rem;">
+                                    <h3>Diagnosis</h3>
+                                    <p id="print-p-diagnosis">-</p>
+                                </div>
+
+                                <div id="print-medicines-section" style="margin-top: 1rem;">
+                                    <h3>℞ Medicines</h3>
+                                    <table class="print-medicines-table" id="print-medicines-table">
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Medicine</th>
+                                                <th>Dosage</th>
+                                                <th>Frequency</th>
+                                                <th>Duration</th>
+                                                <th>Instructions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="print-medicines-tbody">
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <div id="print-notes-section" style="margin-top: 1.5rem;">
+                                    <h3>Notes & Advice</h3>
+                                    <p id="print-p-notes">-</p>
+                                    <p id="print-p-advice" style="margin-top: 0.5rem; font-weight: 500;">-</p>
+                                </div>
+                            </div>
+
+                            <div class="print-footer">
+                                <div>
+                                    <p style="font-size: 0.75rem; color: var(--text-muted);">This is a
+                                        computer-generated prescription.</p>
+                                </div>
+                                <div class="print-signature">
+                                    <div class="line"></div>
+                                    <p id="print-doctor-name">Doctor's Signature</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ========== MODAL CONTAINER ========== -->
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal" id="modal-container">
+            <div class="modal-header">
+                <h3 id="modal-title">Modal</h3>
+                <button class="btn btn-ghost btn-icon" onclick="closeModal()">
+                    <i class="ph ph-x"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="modal-body"></div>
+            <div class="modal-footer" id="modal-footer"></div>
+        </div>
+    </div>
+
+    <!-- ========== SCRIPTS ========== -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="utils.js"></script>
+    <script src="api.js?v=2"></script>
+    <script src="app.js?v=2"></script>
+    <script src="reception.js?v=2"></script>
+    <script src="doctor.js?v=2"></script>
+    <script src="pharmacy.js?v=2"></script>
+    <script src="admin.js?v=2"></script>
+    <script src="print.js?v=2"></script>
+
+    <script>
+        /* --- Modal Helpers --- */
+        function openModal(title, bodyHtml, footerHtml) {
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-body').innerHTML = bodyHtml;
+            document.getElementById('modal-footer').innerHTML = footerHtml || '';
+            document.getElementById('modal-overlay').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('modal-overlay').classList.remove('active');
+        }
+
+        document.getElementById('modal-overlay').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) closeModal();
+        });
+    </script>
+
+</body>
+
+</html>
